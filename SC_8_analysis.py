@@ -4,7 +4,7 @@ import matplotlib;                  #version 2.1.2, plotting package, some parts
 
 ## Create DataFrame by reading in CSV file originally created by calling Discovery API from discovery_api_SearchRecords.py
 ## Make sure dates are recognised as such during the load
-df1=pd.read_csv(r"..\DiscoveryAPI\myRecords.csv",parse_dates=["numStartDate","numEndDate"],infer_datetime_format=True,dayfirst=True)
+df1=pd.read_csv(r"..\DiscoveryAPI\myRecords.csv",parse_dates=["numStartDate","numEndDate"],infer_datetime_format=True,dayfirst=True,dtype={"addressees":str})
 ## Set up list of counties and countries expected to be found in data (would be good to find an external source for these)
 counties=["Yorkshire","Kent","Norfolk","Hampshire","Devon","Northumberland","Cornwall","Lincolnshire","Surrey","Oxfordshire","Suffolk","Sussex","Berkshire","Essex","Gloucestershire","Warwickshire","Wiltshire","Buckinghamshire","Dorset","Somerset","Cambridgeshire","Middlesex","Northamptonshire","Hertfordshire","Shropshire","Staffordshire","Nottinghamshire","Lancashire","Cheshire","Derbyshire","Cumberland","Huntingdonshire","Leicestershire","Channel Islands","Denbighshire","County Durham","Herefordshire","Flintshire","Bedfordshire","Westmorland","Worcestershire","Monmouthshire","Rutland","Caernarfonshire","Pembrokeshire","Brecknockshire","Cardiganshire","Radnorshire","Merionethshire","Anglesey","Glamorganshire","Carmarthenshire","Montgomeryshire"]
 countries=["France","Ireland","Italy","Spain","Netherlands","Germany","Belgium","Portugal"]
@@ -17,6 +17,11 @@ def set_county_or_country(v,county_or_country) :
 	'''Prepare for charting by checking the places column to see if county or country is mentioned (can be more than one of each)'''
 	if county_or_country in v["places"] :
 		return 1;
+
+def standardise_case(v) :
+	'''Set addressee to lower case for analysis'''
+	v["addressees"]=str(v["addressees"]).lower().strip(" .?")
+	return v["addressees"]
 
 def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
 	'''Set up plot given input series, the output file_type, the kind of plot wanted, x and y labels if wanted (default to blank), and any  other keywords (need to be recognised by matplotlib)'''
@@ -61,9 +66,7 @@ s2.rename("SC_8_petitions_summed_by_county_before_1370",inplace=True)
 s3=df2[s1.keys()][df2["median_date"]>1370].sum()
 s3.rename("SC_8_petitions_summed_by_county_after_1370",inplace=True)
 
-## Save our DataFrames and Series to csv files for reference.
-df1.to_csv("SC_8_petitions_analysis.csv")
-df2.to_csv("SC_8_petitions_by_county.csv")
+## Save our Series to csv files for reference.
 s1.to_csv(s1.name+".csv")
 s2.to_csv(s2.name+".csv")
 s3.to_csv(s3.name+".csv")
@@ -82,3 +85,13 @@ make_plot(s2, file_type, kind="bar", y_label=y_label, color="xkcd:red" )
 ## Produce a bar chart from our first Series (using function above), make the bars yellow
 make_plot(s3, file_type, kind="bar", y_label=y_label, color="xkcd:yellow" )
 
+## Now analyse by addressee of petitions instead
+df3=df1[["median_date","addressees"]]
+df3=df3.sort_values("addressees")
+df3["addressees"]=df3.apply(standardise_case,axis=1)
+df3["addressee_count"]=1
+df4=df3[["addressees","addressee_count"]].groupby("addressees").sum()
+df4.to_csv("addressees.csv")
+
+df1.to_csv("SC_8_petitions_analysis.csv")
+df2.to_csv("SC_8_petitions_by_county.csv")
