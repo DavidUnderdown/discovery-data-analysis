@@ -36,35 +36,49 @@ df1["median_date"]=df1.apply(find_median_date,axis=1)
 for county in counties :
 	df1[county]=df1.apply(set_county_or_country,axis=1,args=(county,))
 
+## Same for countries
 for country in countries :
 	df1[country]=df1.apply(set_county_or_country,axis=1,args=(country,))
 
+## Build a new list from the counties list, then add median_date to the start of the list
 newcols=counties.copy()
 newcols.insert(0,"median_date")
 
+## create a new DataFrame taken from the  median_date and counties columns only of the original DataFrame
 df2=df1[newcols]
 
+## Now sum up the totals for each county within the DataFrame (which gives us a Series as an output).  Sort the series into descending order by totals
+## Give Series a name (which will be used to create file names and title for the chart we produce)
 s1=df2[counties].sum()
 s1=s1[s1 >= 25].sort_values(ascending=False)
 s1.rename("SC_8_petitions_summed_by_county",inplace=True)
 
+## A second Series, first filter the DataFrame down to only petitions before 1370, then sum by county
 s2=df2[s1.keys()][df2["median_date"]<1370].sum()
 s2.rename("SC_8_petitions_summed_by_county_before_1370",inplace=True)
 
+## A third Series, this time for petition after 1370 summed by county
 s3=df2[s1.keys()][df2["median_date"]>1370].sum()
 s3.rename("SC_8_petitions_summed_by_county_after_1370",inplace=True)
 
+## Save our DataFrames and Series to csv files for reference.
 df1.to_csv("SC_8_petitions_analysis.csv")
 df2.to_csv("SC_8_petitions_by_county.csv")
 s1.to_csv(s1.name+".csv")
 s2.to_csv(s2.name+".csv")
 s3.to_csv(s3.name+".csv")
 
+## A couple of variables for things that will be common to all the charts we're about to produce.
+## Images of the charts will be saved as PNG, the y axes for each chart will eb labelled "Number of Petitions"
 file_type=".png"
 y_label="Number of petitions"
+
+## Produce a bar chart from our first Series (using function above), make the bars blue
 make_plot(s1, file_type, kind="bar", y_label=y_label, color="xkcd:royal blue" )
 
+## Produce a bar chart from our first Series (using function above), make the bars red
 make_plot(s2, file_type, kind="bar", y_label=y_label, color="xkcd:red" )
 
+## Produce a bar chart from our first Series (using function above), make the bars yellow
 make_plot(s3, file_type, kind="bar", y_label=y_label, color="xkcd:yellow" )
 
