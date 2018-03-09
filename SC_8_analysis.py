@@ -18,9 +18,9 @@ def set_county_or_country(v,county_or_country) :
 	if county_or_country in v["places"] :
 		return 1;
 
-def standardise_case(v) :
-	'''Set addressee to lower case for analysis'''
-	v["addressees"]=str(v["addressees"]).lower().strip(" .?")
+def normalise_adressees(v) :
+	'''Set addressee to title case and other normalisation for analysis'''
+	v["addressees"]=str(v["addressees"]).title().strip(" .?").replace("And","and").replace("Of","of").replace("In","in").replace("The","the").replace("This","this").replace("'S","'s").replace("Other","other").replace("His","his")
 	return v["addressees"]
 
 def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
@@ -88,9 +88,10 @@ make_plot(s3, file_type, kind="bar", y_label=y_label, color="xkcd:yellow" )
 ## Now analyse by addressee of petitions instead
 df3=df1[["median_date","addressees"]]
 df3=df3.sort_values("addressees")
-df3["addressees"]=df3.apply(standardise_case,axis=1)
+df3["addressees"]=df3.apply(normalise_adressees,axis=1)
 df3["addressee_count"]=1
-df4=df3[["addressees","addressee_count"]].groupby("addressees").sum()
+df4=df3[["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
+df["Unknown or lost"]=0
 df4.to_csv("addressees.csv")
 
 df1.to_csv("SC_8_petitions_analysis.csv")
