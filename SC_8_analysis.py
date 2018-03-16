@@ -72,7 +72,7 @@ s2.to_csv(s2.name+".csv")
 s3.to_csv(s3.name+".csv")
 
 ## A couple of variables for things that will be common to all the charts we're about to produce.
-## Images of the charts will be saved as PNG, the y axes for each chart will eb labelled "Number of Petitions"
+## Images of the charts will be saved as PNG, the y axes for each chart will be labelled "Number of Petitions"
 file_type=".png"
 y_label="Number of petitions"
 
@@ -96,7 +96,7 @@ df4.loc["Unknown or lost"]=df4.loc[df4.index.intersection(NotKnowns)].sum()
 df4.drop(index=NotKnowns,inplace=True)
 df4.loc["Other"]=df4[df4["addressee_count"]<14].sum()
 df4=df4[df4["addressee_count"]>14]
-df4.to_csv("addressees.csv")
+df4.to_csv("SC_8_petitions_summed_by_addressees.csv")
 
 df1.to_csv("SC_8_petitions_analysis.csv")
 df2.to_csv("SC_8_petitions_by_county.csv")
