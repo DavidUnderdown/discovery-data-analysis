@@ -34,6 +34,13 @@ def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
 	fig.tight_layout()
 	fig.savefig(pSeries.name+file_type,bbox='tight',pad_inches=5)
 
+def group_not_knowns(df)
+	'''Take a list of values that all indicate that no addressee is known, and group them together as one'''
+	NotKnowns=["Nan","None Specified","Lost","Missing","Not Specified","None"]
+	df.loc["Unknown or lost"]=df.loc[df.index.intersection(NotKnowns)].sum()
+	df.drop(index=NotKnowns,inplace=True)
+	return df
+
 ## Get the median year so we have a single year for each petition
 df1["median_date"]=df1.apply(find_median_date,axis=1)
 
@@ -94,9 +101,7 @@ df3["addressee_count"]=1
 ## Sum grouped by addressee type
 df4=df3[["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
 ## Group together a variety of addressees that basically mean we don't know the addressee
-NotKnowns=["Nan","None Specified","Lost","Missing","Not Specified","None"]
-df4.loc["Unknown or lost"]=df4.loc[df4.index.intersection(NotKnowns)].sum()
-df4.drop(index=NotKnowns,inplace=True)
+df4=group_not_knowns(df4)
 ## Group together the odds and ends with low totals as other
 df4.loc["Other"]=df4[df4["addressee_count"]<14].sum()
 df4=df4[df4["addressee_count"]>14]
