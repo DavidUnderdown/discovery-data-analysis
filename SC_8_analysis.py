@@ -91,7 +91,11 @@ df3=df3.sort_values("addressees")
 df3["addressees"]=df3.apply(normalise_adressees,axis=1)
 df3["addressee_count"]=1
 df4=df3[["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
-df["Unknown or lost"]=0
+NotKnowns=["Nan","None Specified","Lost","Missing","Not Specified","None"]
+df4.loc["Unknown or lost"]=df4.loc[df4.index.intersection(NotKnowns)].sum()
+df4.drop(index=NotKnowns,inplace=True)
+df4.loc["Other"]=df4[df4["addressee_count"]<14].sum()
+df4=df4[df4["addressee_count"]>14]
 df4.to_csv("addressees.csv")
 
 df1.to_csv("SC_8_petitions_analysis.csv")
