@@ -90,13 +90,20 @@ df3=df1[["median_date","addressees"]]
 df3=df3.sort_values("addressees")
 df3["addressees"]=df3.apply(normalise_adressees,axis=1)
 df3["addressee_count"]=1
+
+## Sum grouped by addressee type
 df4=df3[["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
+## Group together a variety of addressees that basically mean we don't know the addressee
 NotKnowns=["Nan","None Specified","Lost","Missing","Not Specified","None"]
 df4.loc["Unknown or lost"]=df4.loc[df4.index.intersection(NotKnowns)].sum()
 df4.drop(index=NotKnowns,inplace=True)
+## Group together the odds and ends with low totals as other
 df4.loc["Other"]=df4[df4["addressee_count"]<14].sum()
 df4=df4[df4["addressee_count"]>14]
 df4.to_csv("SC_8_petitions_summed_by_addressees.csv")
+
+df5=df3[df3["median_date"]>1370][["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
+df5.to_csv("SC_8_petitions_summed_by_addressees_after_1470.csv")
 
 df1.to_csv("SC_8_petitions_analysis.csv")
 df2.to_csv("SC_8_petitions_by_county.csv")
