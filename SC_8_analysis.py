@@ -26,6 +26,9 @@ def normalise_adressees(v) :
 def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
 	'''Set up plot given input series, the output file_type, the kind of plot wanted, x and y labels if wanted (default to blank), and any  other keywords (need to be recognised by matplotlib)'''
 	fig, ax = plt.subplots()
+	if kind=="pie" :
+		ax.set_aspect("equal")
+		# ax.legend()
 	axSubPlot=pSeries.plot(kind=kind,ax=ax,**kwargs)
 	ax.set_title(pSeries.name.replace("_"," "))
 	ax.set_xlabel(x_label)
@@ -34,11 +37,11 @@ def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
 	fig.tight_layout()
 	fig.savefig(pSeries.name+file_type,bbox='tight',pad_inches=5)
 
-def group_not_knowns(df)
+def group_not_knowns(df) :
 	'''Take a list of values that all indicate that no addressee is known, and group them together as one'''
 	NotKnowns=["Nan","None Specified","Lost","Missing","Not Specified","None"]
 	df.loc["Unknown or lost"]=df.loc[df.index.intersection(NotKnowns)].sum()
-	df.drop(index=NotKnowns,inplace=True)
+	df.drop(index=df.index.intersection(NotKnowns),inplace=True)
 	return df
 
 ## Get the median year so we have a single year for each petition
@@ -102,13 +105,31 @@ df3["addressee_count"]=1
 df4=df3[["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
 ## Group together a variety of addressees that basically mean we don't know the addressee
 df4=group_not_knowns(df4)
-## Group together the odds and ends with low totals as other
+## Group together the odds and ends with low totals as "other"
 df4.loc["Other"]=df4[df4["addressee_count"]<14].sum()
-df4=df4[df4["addressee_count"]>14]
-df4.to_csv("SC_8_petitions_summed_by_addressees.csv")
+indexToOtherGroup=df4[df4["addressee_count"]<14].index
+indexToRemainderGroup=df4[df4["addressee_count"]>=14].index
+df4=df4[df4["addressee_count"]>=14]
+# print(df4.describe)
+s4=df4.squeeze()
+s4.rename("SC_8_petitions_summed_by_addressee",inplace=True)
+make_plot(s4,file_type,kind="pie",rotatelabels=True)#,aspect="equal",y="addressee_count",subplots=True,labels=None
+# df4.to_csv("SC_8_petitions_summed_by_addressees.csv")
+s4.to_csv("SC_8_petitions_summed_by_addressees.csv")
 
 df5=df3[df3["median_date"]>1370][["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
-df5.to_csv("SC_8_petitions_summed_by_addressees_after_1470.csv")
+df5=group_not_knowns(df5)
+## Not working, want to get the list of index values from the df4 query and apply them to df5 in a way that doesn't care if some values not in df5
+df5.loc["Other"]=df5.loc[df5.index.intersection(indexToOtherGroup)].sum()
+df5=df5.loc[df5.index.intersection(indexToRemainderGroup)]
+df5.to_csv("SC_8_petitions_summed_by_addressees_after_1370.csv")
+
+df6=df3[df3["median_date"]<1370][["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
+df6=group_not_knowns(df6)
+## Not working, want to get the list of index values from the df4 query and apply them to df5 in a way that doesn't care if some values not in df5
+df6.loc["Other"]=df6.loc[df5.index.intersection(indexToOtherGroup)].sum()
+df6=df6.loc[df6.index.intersection(indexToRemainderGroup)]
+df6.to_csv("SC_8_petitions_summed_by_addressees_before_1370.csv")
 
 df1.to_csv("SC_8_petitions_analysis.csv")
 df2.to_csv("SC_8_petitions_by_county.csv")
