@@ -26,10 +26,13 @@ def normalise_adressees(v) :
 def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
 	'''Set up plot given input series, the output file_type, the kind of plot wanted, x and y labels if wanted (default to blank), and any  other keywords (need to be recognised by matplotlib)'''
 	fig, ax = plt.subplots()
+	axSubPlot=pSeries.plot(kind=kind,ax=ax,**kwargs)
 	if kind=="pie" :
 		ax.set_aspect("equal")
+		pieLabels=pSeries.keys()
+		ax.legend(labels=pieLabels,loc="best",borderaxespad=20)#
+		# print(str(pSeries.keys()))
 		# ax.legend()
-	axSubPlot=pSeries.plot(kind=kind,ax=ax,**kwargs)
 	ax.set_title(pSeries.name.replace("_"," "))
 	ax.set_xlabel(x_label)
 	ax.set_ylabel(y_label)
@@ -113,7 +116,7 @@ df4=df4[df4["addressee_count"]>=14]
 # print(df4.describe)
 s4=df4.squeeze()
 s4.rename("SC_8_petitions_summed_by_addressee",inplace=True)
-make_plot(s4,file_type,kind="pie",rotatelabels=True)#,aspect="equal",y="addressee_count",subplots=True,labels=None
+make_plot(s4,file_type,kind="pie",labels=None)#,aspect="equal",y="addressee_count",subplots=True,rotatelabels=True
 # df4.to_csv("SC_8_petitions_summed_by_addressees.csv")
 s4.to_csv("SC_8_petitions_summed_by_addressees.csv")
 
