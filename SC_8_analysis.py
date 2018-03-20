@@ -1,6 +1,6 @@
 import pandas as pd;                #version 0.22.0, data analysis package, gives us "super spreadsheet" capabilities, everything Excel can do and more
 import matplotlib.pyplot as plt;    #sub module of below
-import matplotlib;                  #version 2.1.2, plotting package, some parts are subclassed by pandas, but importing directly gives more control over output
+import matplotlib;                  #version 2.2.2, plotting package, some parts are subclassed by pandas, but importing directly gives more control over output
 
 ## Create DataFrame by reading in CSV file originally created by calling Discovery API from discovery_api_SearchRecords.py
 ## Make sure dates are recognised as such during the load
@@ -29,16 +29,19 @@ def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
 	axSubPlot=pSeries.plot(kind=kind,ax=ax,**kwargs)
 	if kind=="pie" :
 		ax.set_aspect("equal")
+		ax.set_anchor((0,1))
 		pieLabels=pSeries.keys()
-		ax.legend(labels=pieLabels,loc="best",borderaxespad=20)#
+		ax2 = fig.add_subplot(122)
+		ax2.axis("off") 
+		ax2.legend(labels=pieLabels, loc="center")#handles=ax.get_legend_handles_labels()[0],
+		# fig.legend(labels=pieLabels,loc="lower right")#
 		# print(str(pSeries.keys()))
-		# ax.legend()
 	ax.set_title(pSeries.name.replace("_"," "))
 	ax.set_xlabel(x_label)
 	ax.set_ylabel(y_label)
 	ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator(n=10))
-	fig.tight_layout()
-	fig.savefig(pSeries.name+file_type,bbox='tight',pad_inches=5)
+	#fig.tight_layout()
+	fig.savefig(pSeries.name+file_type,bbox='tight',pad_inches=8)
 
 def group_not_knowns(df) :
 	'''Take a list of values that all indicate that no addressee is known, and group them together as one'''
