@@ -31,10 +31,11 @@ def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
 		ax.set_aspect("equal")
 		ax.set_anchor((0,1))
 		pieLabels=pSeries.keys()
+		ax.legend(labels=pieLabels,loc="best",borderaxespad=20)#
 		# ax2 = fig.add_subplot(122)
 		# ax2.axis("off") 
 		# ax2.legend(labels=pieLabels, loc="center")#handles=ax.get_legend_handles_labels()[0],
-		ax.legend(bbox_to_anchor=(1.08, 0.75),mode="expand",handlelength=0.5,bbox_transform=fig.transFigure, loc="upper right", borderaxespad=0.5)#labels=pieLabels,,loc="lower right"
+		# ax.legend(bbox_to_anchor=(1.08, 0.75),mode="expand",handlelength=0.5,bbox_transform=fig.transFigure, loc="upper right", borderaxespad=0.5)#labels=pieLabels,,loc="lower right"
 		# bbox = matplotlib.transforms.Bbox.union(bboxes)
 		# if fig.subplotpars.right > bbox.width :
 			# fig.subplots_adjust(right=1.25*bbox.width)
@@ -123,7 +124,7 @@ df4=df4[df4["addressee_count"]>=14]
 ## reduce dataframe to series for plotting
 s4=df4.squeeze()
 s4.rename("SC_8_petitions_summed_by_addressee",inplace=True)
-make_plot(s4,file_type,kind="pie",y="addressee_count",subplots=True,rotatelabels=True)#,labels=None,aspect="equal"
+make_plot(s4,file_type,kind="pie",y="addressee_count",labels=None,subplots=True)#,aspect="equal",rotatelabels=True
 s4.to_csv("SC_8_petitions_summed_by_addressees.csv")
 
 df5=df3[df3["median_date"]>1370][["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
@@ -134,7 +135,7 @@ df5.loc["Other"]=df5.loc[df5.index.intersection(indexToOtherGroup)].sum()
 df5=df5.loc[df5.index.intersection(indexToRemainderGroup)]
 s5=df5.squeeze()
 s5.rename("SC_8_petitions_summed_by_addressee_after_1370",inplace=True)
-make_plot(s5,file_type,kind="pie",y="addressee_count",subplots=True,rotatelabels=True)#,labels=None,aspect="equal"
+make_plot(s5,file_type,kind="pie",y="addressee_count",labels=None,subplots=True)#,aspect="equal",rotatelabels=True
 s5.to_csv("SC_8_petitions_summed_by_addressees_after_1370.csv")
 
 df6=df3[df3["median_date"]<1370][["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
@@ -145,7 +146,7 @@ df6.loc["Other"]=df6.loc[df5.index.intersection(indexToOtherGroup)].sum()
 df6=df6.loc[df6.index.intersection(indexToRemainderGroup)]
 s6=df6.squeeze()
 s6.rename("SC_8_petitions_summed_by_addressee_before_1370",inplace=True)
-make_plot(s6,file_type,kind="pie",y="addressee_count",subplots=True,rotatelabels=True)#,labels=None,aspect="equal"
+make_plot(s6,file_type,kind="pie",y="addressee_count",labels=None,subplots=True)#,aspect="equal",rotatelabels=True
 s6.to_csv("SC_8_petitions_summed_by_addressees_before_1370.csv")
 
 df1.to_csv("SC_8_petitions_analysis.csv")
