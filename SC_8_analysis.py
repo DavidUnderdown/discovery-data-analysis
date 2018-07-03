@@ -31,16 +31,19 @@ def make_plot(pSeries, file_type, kind, x_label="", y_label="", **kwargs ) :
 		ax.set_aspect("equal")
 		ax.set_anchor((0,1))
 		pieLabels=pSeries.keys()
-		ax2 = fig.add_subplot(122)
-		ax2.axis("off") 
-		ax2.legend(labels=pieLabels, loc="center")#handles=ax.get_legend_handles_labels()[0],
-		# fig.legend(labels=pieLabels,loc="lower right")#
+		# ax2 = fig.add_subplot(122)
+		# ax2.axis("off") 
+		# ax2.legend(labels=pieLabels, loc="center")#handles=ax.get_legend_handles_labels()[0],
+		ax.legend(bbox_to_anchor=(1.08, 0.75),mode="expand",handlelength=0.5,bbox_transform=fig.transFigure, loc="upper right", borderaxespad=0.5)#labels=pieLabels,,loc="lower right"
+		# bbox = matplotlib.transforms.Bbox.union(bboxes)
+		# if fig.subplotpars.right > bbox.width :
+			# fig.subplots_adjust(right=1.25*bbox.width)
 		# print(str(pSeries.keys()))
 	ax.set_title(pSeries.name.replace("_"," "))
 	ax.set_xlabel(x_label)
 	ax.set_ylabel(y_label)
 	ax.yaxis.set_minor_locator(matplotlib.ticker.AutoMinorLocator(n=10))
-	#fig.tight_layout()
+	fig.tight_layout()
 	fig.savefig(pSeries.name+file_type,bbox='tight',pad_inches=8)
 
 def group_not_knowns(df) :
@@ -113,29 +116,37 @@ df4=df3[["addressees","addressee_count"]].groupby("addressees").sum().sort_value
 df4=group_not_knowns(df4)
 ## Group together the odds and ends with low totals as "other"
 df4.loc["Other"]=df4[df4["addressee_count"]<14].sum()
+## Get list of index values for these so that we can group the same columns when we're splitting the counts by before/after 1370
 indexToOtherGroup=df4[df4["addressee_count"]<14].index
 indexToRemainderGroup=df4[df4["addressee_count"]>=14].index
 df4=df4[df4["addressee_count"]>=14]
-# print(df4.describe)
+## reduce dataframe to series for plotting
 s4=df4.squeeze()
 s4.rename("SC_8_petitions_summed_by_addressee",inplace=True)
-make_plot(s4,file_type,kind="pie",labels=None)#,aspect="equal",y="addressee_count",subplots=True,rotatelabels=True
-# df4.to_csv("SC_8_petitions_summed_by_addressees.csv")
+make_plot(s4,file_type,kind="pie",y="addressee_count",subplots=True,rotatelabels=True)#,labels=None,aspect="equal"
 s4.to_csv("SC_8_petitions_summed_by_addressees.csv")
 
 df5=df3[df3["median_date"]>1370][["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
 df5=group_not_knowns(df5)
-## Not working, want to get the list of index values from the df4 query and apply them to df5 in a way that doesn't care if some values not in df5
+## Use the index lists constructed above to construct our "Other" group over the same columns as for the overall dataframe, 
+## and include the same columns in our final dataframe for petitions after 1470
 df5.loc["Other"]=df5.loc[df5.index.intersection(indexToOtherGroup)].sum()
 df5=df5.loc[df5.index.intersection(indexToRemainderGroup)]
-df5.to_csv("SC_8_petitions_summed_by_addressees_after_1370.csv")
+s5=df5.squeeze()
+s5.rename("SC_8_petitions_summed_by_addressee_after_1370",inplace=True)
+make_plot(s5,file_type,kind="pie",y="addressee_count",subplots=True,rotatelabels=True)#,labels=None,aspect="equal"
+s5.to_csv("SC_8_petitions_summed_by_addressees_after_1370.csv")
 
 df6=df3[df3["median_date"]<1370][["addressees","addressee_count"]].groupby("addressees").sum().sort_values(by="addressee_count",ascending=False)
 df6=group_not_knowns(df6)
-## Not working, want to get the list of index values from the df4 query and apply them to df5 in a way that doesn't care if some values not in df5
+## Use the index lists constructed above to construct our "Other" group over the same columns as for the overall dataframe,
+## and include the same columns in our final dataframe for petitions before 1470
 df6.loc["Other"]=df6.loc[df5.index.intersection(indexToOtherGroup)].sum()
 df6=df6.loc[df6.index.intersection(indexToRemainderGroup)]
-df6.to_csv("SC_8_petitions_summed_by_addressees_before_1370.csv")
+s6=df6.squeeze()
+s6.rename("SC_8_petitions_summed_by_addressee_before_1370",inplace=True)
+make_plot(s6,file_type,kind="pie",y="addressee_count",subplots=True,rotatelabels=True)#,labels=None,aspect="equal"
+s6.to_csv("SC_8_petitions_summed_by_addressees_before_1370.csv")
 
 df1.to_csv("SC_8_petitions_analysis.csv")
 df2.to_csv("SC_8_petitions_by_county.csv")
